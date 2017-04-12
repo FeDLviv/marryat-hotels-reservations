@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -70,5 +71,16 @@ public class ReservationService {
             deleted = true;
         }
         return deleted;
+    }
+
+    /**
+     * Find reservations by date range
+     *
+     * @param from the start of the date range
+     * @param to the end of the date range
+     * @return the list of reservations that are valid within the specified range
+     */
+    public List<Reservation> findReservationsByDateRange(LocalDate from, LocalDate to) {
+        return reservationRepository.findReservationsWithinDateRange(from, to);
     }
 }

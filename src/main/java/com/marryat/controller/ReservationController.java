@@ -5,18 +5,32 @@ import com.marryat.service.ReservationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import javax.validation.ValidationException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import static org.springframework.http.ResponseEntity.notFound;
+import static org.springframework.http.ResponseEntity.ok;
+
 @RestController
 public class ReservationController {
+    public static final String DATE_FORMAT = "yyyy-MM-dd";
     private final Logger log = LoggerFactory.getLogger(ReservationController.class);
 
     private final ReservationService reservationService;
@@ -59,19 +73,7 @@ public class ReservationController {
             return createReservation(reservation);
         }
         Reservation result = reservationService.create(reservation);
-        return ResponseEntity.ok().body(result);
-    }
-
-    /**
-     * GET  /reservations : get all the reservations.
-     *
-     * @return the ResponseEntity with status 200 (OK) and the list of reservations in body
-     */
-    @GetMapping("/reservations")
-
-    public List<Reservation> getAllReservations() {
-        log.debug("REST request to get all Reservations");
-        return reservationService.findAll();
+        return ok().body(result);
     }
 
     /**
@@ -91,18 +93,39 @@ public class ReservationController {
      * DELETE  /reservations/:id : delete the "id" reservation.
      *
      * @param id the id of the reservation to delete
-     * @return the ResponseEntity with status 200 (OK)
+     * @return the ResponseEntity with status 200 (OK) or with status 404 (Not Found)
      */
     @DeleteMapping("/reservations/{id}")
 
     public ResponseEntity<Void> deleteReservation(@PathVariable Long id) {
         log.debug("REST request to delete Reservation : {}", id);
-        reservationService.delete(id);
-        return ResponseEntity.ok().build();
+        return reservationService.delete(id) ? ok().build() : notFound().build();
+    }
+
+    /**
+     * GET  /reservations : get all the reservations.
+     *
+     * @param from the date the startDate should be later or equal to
+     * @param to   the date the startDate should be earlier or equal to
+     * @return the ResponseEntity with status 200 (OK) and the list of reservations in body
+     */
+    @GetMapping("/reservations")
+    public ResponseEntity<List<Reservation>> getReservations(
+            @RequestParam(required = false) @DateTimeFormat(pattern = DATE_FORMAT) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(pattern = DATE_FORMAT) LocalDate to) {
+        List<Reservation> reservations;
+        if (from != null && to != null) {
+            reservations = reservationService.findReservationsByDateRange(from, to);
+        } else if (from != null || to != null) {
+            return ResponseEntity.badRequest().body(null);
+        } else {
+            reservations = reservationService.findAll();
+        }
+        return wrapOrNotFound(Optional.ofNullable(reservations));
     }
 
     private <T> ResponseEntity<T> wrapOrNotFound(Optional<T> maybeResponse) {
-        return maybeResponse.map(response -> ResponseEntity.ok().body(response))
+        return maybeResponse.map(response -> ok().body(response))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 }
