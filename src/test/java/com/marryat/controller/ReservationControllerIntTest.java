@@ -85,24 +85,19 @@ public class ReservationControllerIntTest {
                 .setMessageConverters(jacksonMessageConverter).build();
     }
 
-    private Reservation createEntity() {
-        Reservation reservation = new Reservation();
+    @Before
+    public void initTest() {
+        reservation = new Reservation();
         reservation.setFirstName(DEFAULT_FIRST_NAME);
         reservation.setLastName(DEFAULT_LAST_NAME);
         reservation.setRoomNumber(DEFAULT_ROOM_NUMBER);
         reservation.setStartDate(DEFAULT_START_DATE);
         reservation.setEndDate(DEFAULT_END_DATE);
-        return reservation;
-    }
-
-    @Before
-    public void initTest() {
-        reservation = createEntity();
     }
 
     @Test
     @Transactional
-    public void createReservation() throws Exception {
+    public void shouldCreateReservation() throws Exception {
         int databaseSizeBeforeCreate = reservationRepository.findAll().size();
         reservationMockMvc.perform(post("/reservations")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
@@ -122,7 +117,7 @@ public class ReservationControllerIntTest {
 
     @Test
     @Transactional
-    public void createReservationWithExistingId() throws Exception {
+    public void shouldFailOnCreateReservationWithExistingId() throws Exception {
         int databaseSizeBeforeCreate = reservationRepository.findAll().size();
 
         // Create the Reservation with an existing ID
@@ -141,7 +136,7 @@ public class ReservationControllerIntTest {
 
     @Test
     @Transactional
-    public void checkFirstNameIsRequired() throws Exception {
+    public void shouldFailOnFirstNameMissing() throws Exception {
         int databaseSizeBeforeTest = reservationRepository.findAll().size();
         // set the field null
         reservation.setFirstName(null);
@@ -159,7 +154,7 @@ public class ReservationControllerIntTest {
 
     @Test
     @Transactional
-    public void checkLastNameIsRequired() throws Exception {
+    public void shouldFailOnLastNameMissing() throws Exception {
         int databaseSizeBeforeTest = reservationRepository.findAll().size();
         reservation.setLastName(null);
 
@@ -176,7 +171,7 @@ public class ReservationControllerIntTest {
 
     @Test
     @Transactional
-    public void checkRoomNumberIsRequired() throws Exception {
+    public void shouldFailOnRoomNumberMissing() throws Exception {
         int databaseSizeBeforeTest = reservationRepository.findAll().size();
         reservation.setRoomNumber(null);
 
@@ -193,7 +188,7 @@ public class ReservationControllerIntTest {
 
     @Test
     @Transactional
-    public void checkStartDateIsRequired() throws Exception {
+    public void shouldFailOnStartDateMissing() throws Exception {
         int databaseSizeBeforeTest = reservationRepository.findAll().size();
         reservation.setStartDate(null);
 
@@ -210,7 +205,7 @@ public class ReservationControllerIntTest {
 
     @Test
     @Transactional
-    public void checkEndDateIsRequired() throws Exception {
+    public void shouldFailOnEndDateMissing() throws Exception {
         int databaseSizeBeforeTest = reservationRepository.findAll().size();
         reservation.setEndDate(null);
 
@@ -227,7 +222,7 @@ public class ReservationControllerIntTest {
 
     @Test
     @Transactional
-    public void getAllReservations() throws Exception {
+    public void shouldGetAllReservations() throws Exception {
         reservationRepository.saveAndFlush(reservation);
 
         // Get all the reservationList
@@ -238,7 +233,7 @@ public class ReservationControllerIntTest {
 
     @Test
     @Transactional
-    public void getFilteredNotifications() throws Exception {
+    public void shouldFilterOutReservationsByStartDate() throws Exception {
         reservationRepository.saveAndFlush(reservation);
         Reservation bartsReservation = new Reservation();
         bartsReservation.setFirstName("Bart");
@@ -272,7 +267,7 @@ public class ReservationControllerIntTest {
 
     @Test
     @Transactional
-    public void getReservation() throws Exception {
+    public void shouldGetExistingReservation() throws Exception {
         // Initialize the database
         reservationRepository.saveAndFlush(reservation);
 
@@ -286,7 +281,7 @@ public class ReservationControllerIntTest {
 
     @Test
     @Transactional
-    public void getNonExistingReservation() throws Exception {
+    public void shouldReturnNotFoundOnGetNonExistingReservation() throws Exception {
         // Get the reservation
         reservationMockMvc.perform(get("/reservations/{id}", Long.MAX_VALUE))
                 .andExpect(status().isNotFound());
@@ -294,7 +289,7 @@ public class ReservationControllerIntTest {
 
     @Test
     @Transactional
-    public void updateReservation() throws Exception {
+    public void shouldUpdateExistingReservation() throws Exception {
         reservationService.save(reservation);
 
         int databaseSizeBeforeUpdate = reservationRepository.findAll().size();
@@ -325,7 +320,7 @@ public class ReservationControllerIntTest {
 
     @Test
     @Transactional
-    public void updateNonExistingReservation() throws Exception {
+    public void shouldCreateReservationOnUpdateNonExistingReservation() throws Exception {
         int databaseSizeBeforeUpdate = reservationRepository.findAll().size();
 
         // If the entity doesn't have an ID, it will be created instead of just being updated
@@ -341,7 +336,7 @@ public class ReservationControllerIntTest {
 
     @Test
     @Transactional
-    public void deleteReservation() throws Exception {
+    public void shouldDeleteReservation() throws Exception {
         reservationService.save(reservation);
 
         reservationMockMvc.perform(delete("/reservations/{id}", reservation.getId())
@@ -355,7 +350,7 @@ public class ReservationControllerIntTest {
 
     @Test
     @Transactional
-    public void equalsVerifier() throws Exception {
+    public void shouldVerifyEquals() throws Exception {
         TestUtil.equalsVerifier(Reservation.class);
     }
 
