@@ -102,7 +102,7 @@ public class ReservationController {
     }
 
     /**
-     * GET  /reservations : get all the reservations.
+     * GET  /reservations : get all the reservations with start date within the period.
      *
      * @param from the date the startDate should be later or equal to
      * @param to   the date the startDate should be earlier or equal to
@@ -110,17 +110,20 @@ public class ReservationController {
      */
     @GetMapping("/reservations")
     public ResponseEntity<List<Reservation>> getReservations(
-            @RequestParam(required = false) @DateTimeFormat(pattern = DATE_FORMAT) LocalDate from,
-            @RequestParam(required = false) @DateTimeFormat(pattern = DATE_FORMAT) LocalDate to) {
-        List<Reservation> reservations;
-        if (from != null && to != null) {
-            reservations = reservationService.findReservationsByDateRange(from, to);
-        } else if (from != null || to != null) {
-            return ResponseEntity.badRequest().body(null);
-        } else {
-            reservations = reservationService.findAll();
-        }
-        return wrapOrNotFound(Optional.ofNullable(reservations));
+            @RequestParam @DateTimeFormat(pattern = DATE_FORMAT) LocalDate from,
+            @RequestParam @DateTimeFormat(pattern = DATE_FORMAT) LocalDate to) {
+
+        return ResponseEntity.ok().body(reservationService.findReservationsByDateRange(from, to));
+    }
+
+    /**
+     * GET  /reservations/list : get all the reservations.
+     *
+     * @return the ResponseEntity with status 200 (OK) and the list of reservations in body
+     */
+    @GetMapping("/reservations/list")
+    public ResponseEntity<List<Reservation>> listAllReservations() {
+        return wrapOrNotFound(Optional.ofNullable(reservationService.findAll()));
     }
 
     private <T> ResponseEntity<T> wrapOrNotFound(Optional<T> maybeResponse) {
