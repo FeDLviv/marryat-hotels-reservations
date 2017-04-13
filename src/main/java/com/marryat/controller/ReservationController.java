@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import javax.validation.ValidationException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
@@ -43,17 +42,17 @@ public class ReservationController {
     /**
      * POST  /reservations : Create a new reservation.
      *
-     * @param reservation the reservation to create
+     * @param reservation the reservation to save
      * @return the ResponseEntity with status 201 (Created) and with body the new reservation, or with status 400 (Bad Request) if the reservation has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/reservations")
     public ResponseEntity<Reservation> createReservation(@Valid @RequestBody Reservation reservation) throws URISyntaxException {
-        log.debug("REST request to create Reservation : {}", reservation);
+        log.debug("REST request to save Reservation : {}", reservation);
         if (reservation.getId() != null) {
             return ResponseEntity.badRequest().body(null);
         }
-        Reservation result = reservationService.create(reservation);
+        Reservation result = reservationService.save(reservation);
         return ResponseEntity.created(new URI("/api/reservations/" + result.getId())).body(result);
     }
 
@@ -72,7 +71,7 @@ public class ReservationController {
         if (reservation.getId() == null) {
             return createReservation(reservation);
         }
-        Reservation result = reservationService.create(reservation);
+        Reservation result = reservationService.save(reservation);
         return ok().body(result);
     }
 

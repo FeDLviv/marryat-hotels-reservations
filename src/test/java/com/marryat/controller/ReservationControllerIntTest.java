@@ -295,7 +295,7 @@ public class ReservationControllerIntTest {
     @Test
     @Transactional
     public void updateReservation() throws Exception {
-        reservationService.create(reservation);
+        reservationService.save(reservation);
 
         int databaseSizeBeforeUpdate = reservationRepository.findAll().size();
 
@@ -307,7 +307,7 @@ public class ReservationControllerIntTest {
         updatedReservation.setStartDate(UPDATED_START_DATE);
         updatedReservation.setEndDate(UPDATED_END_DATE);
 
-       ResultActions resultActions = reservationMockMvc.perform(put("/reservations")
+       reservationMockMvc.perform(put("/reservations")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(updatedReservation)))
                 .andExpect(status().isOk());
@@ -329,7 +329,7 @@ public class ReservationControllerIntTest {
         int databaseSizeBeforeUpdate = reservationRepository.findAll().size();
 
         // If the entity doesn't have an ID, it will be created instead of just being updated
-        ResultActions resultActions = reservationMockMvc.perform(put("/reservations")
+        reservationMockMvc.perform(put("/reservations")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(reservation)))
                 .andExpect(status().isCreated());
@@ -342,7 +342,7 @@ public class ReservationControllerIntTest {
     @Test
     @Transactional
     public void deleteReservation() throws Exception {
-        reservationService.create(reservation);
+        reservationService.save(reservation);
 
         reservationMockMvc.perform(delete("/reservations/{id}", reservation.getId())
                 .accept(TestUtil.APPLICATION_JSON_UTF8))

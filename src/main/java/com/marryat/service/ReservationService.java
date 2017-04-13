@@ -26,10 +26,10 @@ public class ReservationService {
     /**
      * Create a reservation.
      *
-     * @param reservation the entity to create
+     * @param reservation the entity to save
      * @return the persisted entity
      */
-    public Reservation create(Reservation reservation) {
+    public Reservation save(Reservation reservation) {
         LOGGER.debug("Creating Reservation : {}", reservation);
         return reservationRepository.save(reservation);
     }
