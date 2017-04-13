@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import static org.springframework.http.ResponseEntity.badRequest;
 import static org.springframework.http.ResponseEntity.notFound;
 import static org.springframework.http.ResponseEntity.ok;
 
@@ -113,7 +114,8 @@ public class ReservationController {
             @RequestParam @DateTimeFormat(pattern = DATE_FORMAT) LocalDate from,
             @RequestParam @DateTimeFormat(pattern = DATE_FORMAT) LocalDate to) {
 
-        return ResponseEntity.ok().body(reservationService.findReservationsByDateRange(from, to));
+        return (from.compareTo(to) <= 0) ? ResponseEntity.ok().body(reservationService.findReservationsByDateRange
+                (from, to)) : badRequest().body(null);
     }
 
     /**
