@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.describedAs;
 import static org.hamcrest.Matchers.hasItem;
+import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -226,7 +227,7 @@ public class ReservationControllerIntTest {
         reservationRepository.saveAndFlush(reservation);
 
         // Get all the reservationList
-        ResultActions resultActions = reservationMockMvc.perform(get("/reservations").accept(TestUtil
+        ResultActions resultActions = reservationMockMvc.perform(get("/reservations/list").accept(TestUtil
                 .APPLICATION_JSON_UTF8));
         expectListContainsReservation(resultActions, reservation);
     }
@@ -346,6 +347,19 @@ public class ReservationControllerIntTest {
         // Validate the database is empty
         List<Reservation> reservationList = reservationRepository.findAll();
         assertThat(reservationList).isEmpty();
+    }
+
+    @Test
+    @Transactional
+    public void shouldNotDeleteNonExistingReservation() throws Exception {
+        reservationService.save(reservation);
+
+        reservationMockMvc.perform(delete("/reservations/{id}", reservation.getId() + 1)
+                .accept(TestUtil.APPLICATION_JSON_UTF8))
+                .andExpect(status().isNotFound());
+
+        List<Reservation> reservationList = reservationRepository.findAll();
+        assertEquals(reservationList.get(0), reservation);
     }
 
     @Test
