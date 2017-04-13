@@ -54,7 +54,7 @@ public class ReservationController {
             return ResponseEntity.badRequest().body(null);
         }
         Reservation result = reservationService.save(reservation);
-        return ResponseEntity.created(new URI("/api/reservations/" + result.getId())).body(result);
+        return ResponseEntity.created(new URI("/reservations/" + result.getId())).body(result);
     }
 
     /**
