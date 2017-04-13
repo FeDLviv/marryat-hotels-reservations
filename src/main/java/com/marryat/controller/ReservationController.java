@@ -72,6 +72,9 @@ public class ReservationController {
     @PutMapping("/reservations")
     public ResponseEntity<Reservation> updateReservation(@Valid @RequestBody Reservation reservation) throws
             URISyntaxException {
+        if (reservation.getId() == null) {
+            return createReservation(reservation);
+        }
         log.debug("REST request to update Reservation : {}", reservation);
         return datesValid(reservation.getStartDate(), reservation.getEndDate()) ?
                 ok().body(reservationService.save(reservation)) : badRequest().build();
