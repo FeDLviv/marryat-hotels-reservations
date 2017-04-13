@@ -44,17 +44,20 @@ public class ReservationController {
      * POST  /reservations : Create a new reservation.
      *
      * @param reservation the reservation to save
-     * @return the ResponseEntity with status 201 (Created) and with body the new reservation, or with status 400 (Bad Request) if the reservation has already an ID
+     * @return the ResponseEntity with status 201 (Created) and with body the new reservation, or with status 400
+     * (Bad Request) if the reservation has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/reservations")
-    public ResponseEntity<Reservation> createReservation(@Valid @RequestBody Reservation reservation) throws URISyntaxException {
+    public ResponseEntity<Reservation> createReservation(@Valid @RequestBody Reservation reservation) throws
+            URISyntaxException {
         log.debug("REST request to save Reservation : {}", reservation);
         if (reservation.getId() != null) {
             return ResponseEntity.badRequest().body(null);
         }
         Reservation result = reservationService.save(reservation);
-        return ResponseEntity.created(new URI("/reservations/" + result.getId())).body(result);
+        return datesValid(reservation.getStartDate(), reservation.getEndDate()) ?
+                ResponseEntity.created(new URI("/reservations/" + result.getId())).body(result) : badRequest().build();
     }
 
     /**
@@ -67,9 +70,11 @@ public class ReservationController {
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/reservations")
-    public ResponseEntity<Reservation> updateReservation(@Valid @RequestBody Reservation reservation) throws URISyntaxException {
+    public ResponseEntity<Reservation> updateReservation(@Valid @RequestBody Reservation reservation) throws
+            URISyntaxException {
         log.debug("REST request to update Reservation : {}", reservation);
-        return ok().body(reservationService.save(reservation));
+        return datesValid(reservation.getStartDate(), reservation.getEndDate()) ?
+                ok().body(reservationService.save(reservation)) : badRequest().build();
     }
 
     /**
@@ -110,7 +115,7 @@ public class ReservationController {
             @RequestParam @DateTimeFormat(pattern = DATE_FORMAT) LocalDate from,
             @RequestParam @DateTimeFormat(pattern = DATE_FORMAT) LocalDate to) {
 
-        return (from.compareTo(to) <= 0) ? ResponseEntity.ok().body(reservationService.findReservationsByDateRange
+        return datesValid(from, to) ? ResponseEntity.ok().body(reservationService.findReservationsByDateRange
                 (from, to)) : badRequest().body(null);
     }
 
@@ -127,5 +132,9 @@ public class ReservationController {
     private <T> ResponseEntity<T> wrapOrNotFound(Optional<T> maybeResponse) {
         return maybeResponse.map(response -> ok().body(response))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    private boolean datesValid(LocalDate from, LocalDate to) {
+        return from.compareTo(to) <= 0;
     }
 }
